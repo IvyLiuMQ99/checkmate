@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>CheckMate Cartoon Explainer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #eaf4ee;
+        --surface: #ffffff;
+        --surface-2: #f4faf6;
+        --ink: #21323d;
+        --ink-soft: #50636e;
+        --line: #d5e3da;
+        --coral: #ff6b4a;
+        --coral-deep: #e04e2e;
+        --teal: #0f9594;
+        --teal-deep: #0b7372;
+        --amber: #ffb43a;
+        --sun: #ffd23f;
+        --paper: #fff3d6;
+        --paper-line: #e3c98f;
+        --ground: #cfe8d4;
+        --stage-bg: #fdfefb;
+        --shadow: 0 14px 34px rgba(33, 50, 61, 0.12);
+        --chip-bg: #e7f3ec;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0e1a22;
+          --surface: #1a2a35;
+          --surface-2: #16242f;
+          --ink: #f3eee3;
+          --ink-soft: #aebfc6;
+          --line: #2e4353;
+          --coral: #ff7d5f;
+          --coral-deep: #ff6b4a;
+          --teal: #2bb3b1;
+          --teal-deep: #57c7c5;
+          --amber: #ffb43a;
+          --sun: #ffd23f;
+          --paper: #2e2a1c;
+          --paper-line: #57502f;
+          --ground: #1d3329;
+          --stage-bg: #14222c;
+          --shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+          --chip-bg: #22382f;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Nunito", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1, h2, h3, .display { font-family: "Baloo 2", "Nunito", sans-serif; }
+
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 22px 16px 34px;
+      }
+      .intro {
+        text-align: center;
+        font-size: 1.06rem;
+        font-weight: 700;
+        color: var(--ink-soft);
+        margin: 4px auto 16px;
+        max-width: 620px;
+        line-height: 1.5;
+      }
+      .intro strong { color: var(--ink); }
+
+      .player {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      /* Progress segments */
+      .progress {
+        display: flex;
+        gap: 6px;
+        padding: 16px 18px 4px;
+      }
+      .seg {
+        flex: 1;
+        height: 7px;
+        border-radius: 99px;
+        background: var(--line);
+        overflow: hidden;
+        cursor: pointer;
+        border: none;
+        padding: 0;
+      }
+      .seg-fill {
+        display: block;
+        height: 100%;
+        width: 0%;
+        border-radius: 99px;
+        background: var(--coral);
+      }
+      .seg.done .seg-fill { width: 100%; }
+
+      /* Stage */
+      .stage {
+        position: relative;
+        background:
+          radial-gradient(circle, rgba(15, 149, 148, 0.10) 1.6px, transparent 1.7px) 0 0 / 26px 26px,
+          var(--stage-bg);
+        min-height: 430px;
+      }
+      .scene {
+        display: none;
+        padding: 26px 30px 30px;
+      }
+      .scene.active { display: block; }
+
+      .scene-head { max-width: 640px; }
+      .chip {
+        display: inline-block;
+        background: var(--chip-bg);
+        color: var(--teal-deep);
+        font-weight: 900;
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        padding: 5px 12px;
+        border-radius: 99px;
+        margin-bottom: 10px;
+      }
+      .scene h2 {
+        font-size: clamp(1.7rem, 4.5vw, 2.4rem);
+        line-height: 1.12;
+        margin: 0 0 10px;
+        font-weight: 800;
+      }
+      .scene p.lede {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: var(--ink-soft);
+        font-weight: 600;
+        margin: 0;
+      }
+      .tagline {
+        font-family: "Baloo 2", sans-serif;
+        font-size: clamp(1.35rem, 3.6vw, 1.9rem);
+        font-weight: 700;
+        line-height: 1.3;
+        margin: 4px 0 12px;
+      }
+      .tagline .hl { color: var(--coral-deep); }
+
+      .layout-split {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 26px;
+        align-items: center;
+      }
+      .art { width: 100%; height: auto; display: block; }
+      .art-strip { max-width: 560px; margin: 6px auto 0; }
+
+      /* Entrance pops, restarted each time a scene becomes active */
+      .pop { opacity: 0; }
+      .scene.active .pop {
+        animation: pop-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        animation-delay: var(--d, 0s);
+      }
+      @keyframes pop-in {
+        from { opacity: 0; transform: translateY(16px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .bob { animation: bob 2.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+      @keyframes bob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-7px); }
+      }
+      .sway { animation: sway 3.4s ease-in-out infinite; transform-origin: bottom center; transform-box: fill-box; }
+      @keyframes sway {
+        0%, 100% { transform: rotate(-2deg); }
+        50% { transform: rotate(2.5deg); }
+      }
+      .scan { animation: scan 3s ease-in-out infinite; }
+      @keyframes scan {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(46px, 10px); }
+      }
+      .dash-move { animation: dashmove 1.2s linear infinite; }
+      @keyframes dashmove { to { stroke-dashoffset: -18; } }
+      .float-up { animation: floatup 2.8s ease-in-out infinite; }
+      @keyframes floatup {
+        0%, 100% { transform: translateY(0); opacity: 0.95; }
+        50% { transform: translateY(-9px); opacity: 1; }
+      }
+      .confetti { animation: confetti-fall 2.6s ease-in infinite; transform-box: fill-box; }
+      @keyframes confetti-fall {
+        0% { transform: translateY(-8px) rotate(0deg); opacity: 0; }
+        15% { opacity: 1; }
+        100% { transform: translateY(120px) rotate(300deg); opacity: 0; }
+      }
+      .sparkle { animation: sparkle 1.8s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+      @keyframes sparkle {
+        0%, 100% { transform: scale(0.6) rotate(0deg); opacity: 0.5; }
+        50% { transform: scale(1.15) rotate(20deg); opacity: 1; }
+      }
+
+      /* Cards */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 20px;
+      }
+      .card {
+        background: var(--surface-2);
+        border: 1.5px solid var(--line);
+        border-radius: 18px;
+        padding: 18px 18px 16px;
+      }
+      .card .icon-badge {
+        width: 44px; height: 44px;
+        border-radius: 13px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 10px;
+      }
+      .card h3 { margin: 0 0 6px; font-size: 1.12rem; font-weight: 700; }
+      .card p { margin: 0; font-size: 0.94rem; line-height: 1.55; color: var(--ink-soft); font-weight: 600; }
+
+      /* Sample scoring card */
+      .sample {
+        background: var(--paper);
+        border: 1.5px solid var(--paper-line);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 8px 20px rgba(33, 50, 61, 0.08);
+      }
+      .sample-top {
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .sample-tag {
+        background: var(--coral);
+        color: #fff;
+        font-weight: 900;
+        font-size: 0.72rem;
+        letter-spacing: 0.05em;
+        padding: 4px 10px;
+        border-radius: 99px;
+      }
+      .sample-note { font-size: 0.8rem; font-weight: 800; color: var(--ink-soft); }
+      .sample-quote {
+        background: var(--surface);
+        border: 1px solid var(--paper-line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        font-weight: 700;
+        margin: 0 0 14px;
+      }
+      .sample-quote .from {
+        display: block;
+        font-size: 0.74rem;
+        font-weight: 900;
+        color: var(--ink-soft);
+        letter-spacing: 0.04em;
+        margin-bottom: 5px;
+      }
+      .score-row {
+        display: grid;
+        grid-template-columns: 108px 1fr 34px;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 9px;
+        font-weight: 800;
+        font-size: 0.9rem;
+      }
+      .bar {
+        height: 11px;
+        border-radius: 99px;
+        background: rgba(33, 50, 61, 0.12);
+        overflow: hidden;
+      }
+      .bar-fill {
+        display: block;
+        height: 100%;
+        width: 0;
+        border-radius: 99px;
+        background: var(--teal);
+      }
+      .scene.active .bar-fill {
+        animation: fill-bar 0.9s ease-out both;
+        animation-delay: var(--d, 0.4s);
+      }
+      @keyframes fill-bar { from { width: 0; } to { width: var(--w); } }
+      .rationale {
+        margin-top: 12px;
+        font-size: 0.92rem;
+        line-height: 1.55;
+        font-weight: 600;
+        color: var(--ink-soft);
+      }
+      .rationale strong { color: var(--ink); }
+
+      .badges { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+      .badge {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: var(--surface);
+        border: 1.5px solid var(--teal);
+        color: var(--ink);
+        font-weight: 800;
+        font-size: 0.86rem;
+        padding: 8px 13px;
+        border-radius: 99px;
+      }
+      .badge svg { flex: none; }
+
+      /* Results */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-top: 20px;
+      }
+      .stat {
+        background: var(--surface-2);
+        border: 1.5px solid var(--line);
+        border-radius: 18px;
+        padding: 18px 14px 14px;
+        text-align: center;
+      }
+      .stat .num {
+        font-family: "Baloo 2", sans-serif;
+        font-size: clamp(1.6rem, 4vw, 2.1rem);
+        font-weight: 800;
+        color: var(--coral-deep);
+        line-height: 1.05;
+      }
+      .stat:nth-child(2) .num { color: var(--teal-deep); }
+      .stat:nth-child(3) .num { color: var(--teal-deep); }
+      .stat .lbl { font-size: 0.88rem; font-weight: 700; color: var(--ink-soft); line-height: 1.45; margin-top: 5px; }
+
+      /* Controls */
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 18px 18px;
+        border-top: 1px solid var(--line);
+        background: var(--surface);
+        flex-wrap: wrap;
+      }
+      .ctl {
+        appearance: none;
+        border: 1.5px solid var(--line);
+        background: var(--surface-2);
+        color: var(--ink);
+        width: 46px; height: 46px;
+        border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        transition: transform 0.12s ease, background 0.12s ease;
+      }
+      .ctl:hover { background: var(--chip-bg); }
+      .ctl:active { transform: scale(0.93); }
+      .ctl.primary {
+        background: var(--coral);
+        border-color: var(--coral);
+        color: #fff;
+        width: 54px; height: 54px;
+      }
+      .ctl.primary:hover { background: var(--coral-deep); }
+      .ctl:disabled { opacity: 0.35; cursor: default; }
+      .counter {
+        font-weight: 900;
+        font-size: 0.9rem;
+        color: var(--ink-soft);
+        margin-left: 4px;
+      }
+      .replay {
+        margin-left: auto;
+        width: auto;
+        border-radius: 99px;
+        padding: 0 18px;
+        gap: 8px;
+        font-family: "Nunito", sans-serif;
+        font-weight: 900;
+        font-size: 0.92rem;
+        height: 46px;
+      }
+      .big-replay {
+        display: inline-flex; align-items: center; gap: 9px;
+        margin-top: 18px;
+        background: var(--coral);
+        color: #fff;
+        border: none;
+        font-family: "Nunito", sans-serif;
+        font-weight: 900;
+        font-size: 1rem;
+        padding: 13px 24px;
+        border-radius: 99px;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(224, 78, 46, 0.3);
+      }
+      .big-replay:hover { background: var(--coral-deep); }
+
+      footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 0.86rem;
+        line-height: 1.6;
+        color: var(--ink-soft);
+        font-weight: 600;
+        max-width: 640px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* SVG helper fills */
+      .f-ground { fill: var(--ground); }
+      .f-ink { fill: var(--ink); }
+      .svg-label { font-family: "Baloo 2", sans-serif; font-weight: 700; fill: var(--ink); }
+      .svg-small { font-family: "Nunito", sans-serif; font-weight: 800; fill: var(--ink-soft); }
+
+      @media (max-width: 720px) {
+        .stage { min-height: 0; }
+        .scene { padding: 20px 18px 24px; }
+        .layout-split { grid-template-columns: 1fr; gap: 14px; }
+        .layout-split .art { max-width: 340px; margin: 0 auto; }
+        .cards { grid-template-columns: 1fr; }
+        .stats { grid-template-columns: repeat(2, 1fr); }
+        .counter { display: none; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation: none !important; transition: none !important; }
+        .pop { opacity: 1; }
+        .bar-fill { width: var(--w); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Character library: one PM, one robot judge, reused across scenes -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <g id="char-pm">
+          <rect x="64" y="150" width="16" height="36" rx="8" fill="#33566b"/>
+          <rect x="100" y="150" width="16" height="36" rx="8" fill="#33566b"/>
+          <ellipse cx="68" cy="190" rx="13" ry="5.5" fill="#22333f"/>
+          <ellipse cx="112" cy="190" rx="13" ry="5.5" fill="#22333f"/>
+          <path d="M56 98 Q90 88 124 98 L130 154 Q90 164 50 154 Z" fill="#ff6b4a"/>
+          <path d="M58 104 Q40 122 44 144" stroke="#e85a38" stroke-width="13" stroke-linecap="round" fill="none"/>
+          <circle cx="45" cy="146" r="6.5" fill="#ffddbe"/>
+          <path d="M122 104 Q140 112 140 128" stroke="#e85a38" stroke-width="13" stroke-linecap="round" fill="none"/>
+          <circle cx="140" cy="130" r="6.5" fill="#ffddbe"/>
+          <g transform="rotate(8 143 132)">
+            <rect x="128" y="110" width="36" height="48" rx="4" fill="#9c6b46"/>
+            <rect x="133" y="117" width="26" height="37" rx="2" fill="#fffdf6"/>
+            <rect x="140" y="106" width="13" height="9" rx="3" fill="#5b7a8c"/>
+            <path d="M137 128 h18 M137 137 h18 M137 146 h12" stroke="#c4ced4" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <rect x="83" y="84" width="14" height="12" fill="#ffddbe"/>
+          <circle cx="90" cy="56" r="31" fill="#ffddbe"/>
+          <circle cx="90" cy="20" r="11" fill="#46322a"/>
+          <path d="M59 56 Q57 24 90 23 Q123 24 121 56 Q119 40 106 36 Q108 48 98 42 Q84 33 70 42 Q61 46 59 56 Z" fill="#46322a"/>
+          <circle cx="78" cy="58" r="3.4" fill="#26333c"/>
+          <circle cx="102" cy="58" r="3.4" fill="#26333c"/>
+          <path d="M82 68 Q90 75 98 68" stroke="#26333c" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+          <ellipse cx="68" cy="66" rx="5" ry="3" fill="#ff9e85" opacity="0.75"/>
+          <ellipse cx="112" cy="66" rx="5" ry="3" fill="#ff9e85" opacity="0.75"/>
+        </g>
+        <g id="char-bot">
+          <line x1="100" y1="34" x2="100" y2="19" stroke="#0b7372" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="100" cy="13" r="6.5" fill="#ffb43a"/>
+          <rect x="26" y="58" width="12" height="28" rx="6" fill="#0f9594"/>
+          <rect x="162" y="58" width="12" height="28" rx="6" fill="#0f9594"/>
+          <rect x="38" y="30" width="124" height="80" rx="27" fill="#dff2ec"/>
+          <rect x="51" y="43" width="98" height="54" rx="18" fill="#22333f"/>
+          <circle cx="82" cy="67" r="6.5" fill="#6ff2ce"/>
+          <circle cx="118" cy="67" r="6.5" fill="#6ff2ce"/>
+          <path d="M89 82 Q100 89 111 82" stroke="#6ff2ce" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          <rect x="90" y="110" width="20" height="8" fill="#0b7372"/>
+          <path d="M54 126 Q29 132 27 154" stroke="#0b7372" stroke-width="13" stroke-linecap="round" fill="none"/>
+          <g>
+            <rect x="4" y="146" width="40" height="52" rx="5" fill="#fff3d6" stroke="#d9a441" stroke-width="2"/>
+            <rect x="15" y="141" width="18" height="9" rx="3" fill="#8fa6b0"/>
+            <path d="M11 162 l4 4 l7 -8 M11 178 l4 4 l7 -8 M11 194 l4 4 l7 -8" stroke="#0f9594" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(0 -4)"/>
+            <path d="M27 160 h11 M27 176 h11 M27 192 h11" stroke="#d8c491" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <path d="M146 126 Q168 118 172 98" stroke="#0b7372" stroke-width="13" stroke-linecap="round" fill="none"/>
+          <line x1="174" y1="92" x2="182" y2="76" stroke="#22333f" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="186" cy="64" r="15" fill="#bdeff2" opacity="0.6"/>
+          <circle cx="186" cy="64" r="15" fill="none" stroke="#22333f" stroke-width="4"/>
+          <rect x="52" y="116" width="96" height="56" rx="19" fill="#0f9594"/>
+          <circle cx="100" cy="144" r="15" fill="#ffffff"/>
+          <path d="M91 144 l6 6 l12 -13" stroke="#0f9594" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <rect x="66" y="172" width="17" height="15" rx="6" fill="#0b7372"/>
+          <rect x="117" y="172" width="17" height="15" rx="6" fill="#0b7372"/>
+        </g>
+      </defs>
+    </svg>
+
+  <main class="wrap">
+    <p class="intro">How one summer project taught an AI to audit other AIs. <strong>Six short scenes, about a minute in total.</strong> It plays on its own, or you can tap through at your own pace.</p>
+
+    <div class="player">
+      <div class="progress" id="progress" role="tablist" aria-label="Scenes"></div>
+
+      <div class="stage" id="stage">
+
+        <!-- Scene 1: The problem -->
+        <section class="scene" data-dur="9000" aria-label="Scene 1, the problem">
+          <div class="layout-split">
+            <div class="pop" style="--d:.05s">
+              <svg class="art" viewBox="0 0 440 300" role="img" aria-label="A product manager buried in paperwork while a calendar shows one audit cycle taking two and a half weeks">
+                <path class="f-ground" d="M0 258 Q220 240 440 258 L440 300 L0 300 Z"/>
+                <g class="pop" style="--d:.3s">
+                  <rect x="18" y="18" width="120" height="124" rx="12" fill="#ffffff" stroke="#d5e3da" stroke-width="2"/>
+                  <rect x="18" y="18" width="120" height="26" rx="12" fill="#ff6b4a"/>
+                  <text x="78" y="36" text-anchor="middle" class="svg-label" font-size="13" fill="#ffffff">AUDIT CYCLE</text>
+                  <path d="M32 70 h92 M32 88 h92 M48 56 v56 M78 56 v56 M108 56 v56" stroke="#d5e3da" stroke-width="2"/>
+                  <rect x="30" y="54" width="96" height="58" rx="8" fill="none" stroke="#e04e2e" stroke-width="3.5"/>
+                  <text x="78" y="133" text-anchor="middle" class="svg-label" font-size="17" fill="#e04e2e">2.5 weeks</text>
+                </g>
+                <g stroke="#8fa6b0" stroke-width="4" stroke-linecap="round" class="pop" style="--d:.5s">
+                  <line x1="146" y1="44" x2="188" y2="44"/>
+                  <line x1="138" y1="64" x2="172" y2="64"/>
+                  <line x1="150" y1="84" x2="186" y2="84"/>
+                </g>
+                <g class="float-up pop" style="--d:.55s">
+                  <rect x="198" y="28" width="52" height="44" rx="12" fill="#dff2ec" stroke="#0f9594" stroke-width="2.5"/>
+                  <circle cx="215" cy="47" r="4.5" fill="#22333f"/>
+                  <circle cx="233" cy="47" r="4.5" fill="#22333f"/>
+                  <path d="M216 60 Q224 65 232 60" stroke="#22333f" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                  <line x1="224" y1="28" x2="224" y2="19" stroke="#0f9594" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="224" cy="16" r="3.5" fill="#ffb43a"/>
+                </g>
+                <text x="224" y="98" text-anchor="middle" class="svg-small" font-size="12.5">AI tools ship fast</text>
+                <g class="pop" style="--d:.2s">
+                  <g class="sway">
+                    <rect x="150" y="196" width="86" height="62" rx="4" fill="#ffffff" stroke="#c4ced4" stroke-width="2" transform="rotate(-4 193 227)"/>
+                    <rect x="156" y="182" width="86" height="62" rx="4" fill="#fffdf6" stroke="#c4ced4" stroke-width="2" transform="rotate(2 199 213)"/>
+                    <rect x="152" y="168" width="86" height="62" rx="4" fill="#ffffff" stroke="#c4ced4" stroke-width="2" transform="rotate(-1 195 199)"/>
+                    <path d="M164 186 h56 M164 198 h56 M164 210 h40" stroke="#c4ced4" stroke-width="4" stroke-linecap="round"/>
+                  </g>
+                  <text x="196" y="152" text-anchor="middle" class="svg-small" font-size="12.5">outputs to check, by hand</text>
+                </g>
+                <g transform="translate(238 66) scale(0.92)">
+                  <g class="bob"><use href="#char-pm"/></g>
+                </g>
+                <path d="M284 78 q6 10 0 15 q-6 -5 0 -15" fill="#7ec8e3" class="pop" style="--d:.8s"/>
+                <g class="pop" style="--d:.95s">
+                  <circle cx="66" cy="222" r="17" fill="#bdeff2" opacity="0.55"/>
+                  <circle cx="66" cy="222" r="17" fill="none" stroke="#22333f" stroke-width="3.5"/>
+                  <line x1="79" y1="235" x2="90" y2="246" stroke="#22333f" stroke-width="5" stroke-linecap="round"/>
+                  <text x="66" y="270" text-anchor="middle" class="svg-small" font-size="12">only a small sample</text>
+                  <text x="66" y="286" text-anchor="middle" class="svg-small" font-size="12">ever gets reviewed</text>
+                </g>
+              </svg>
+            </div>
+            <div>
+              <span class="chip pop" style="--d:.1s">The problem</span>
+              <h2 class="pop" style="--d:.18s">Great AI tools, checked by hand</h2>
+              <p class="lede pop" style="--d:.3s">AI tools were shipping faster and faster, but every output still had to be checked by a human auditor, one at a time. One audit cycle took about 2.5 weeks, and only a small sample of outputs ever got reviewed. Launches slowed down, and quality problems slipped through quietly.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Scene 2: Meet CheckMate -->
+        <section class="scene" data-dur="9000" aria-label="Scene 2, meet CheckMate">
+          <div class="layout-split">
+            <div>
+              <span class="chip pop" style="--d:.05s">The idea</span>
+              <h2 class="pop" style="--d:.12s">Meet CheckMate</h2>
+              <p class="tagline pop" style="--d:.25s">AI products rarely fail loudly. They fail quietly. <span class="hl">CheckMate is the one measuring.</span></p>
+              <p class="lede pop" style="--d:.4s">CheckMate flips the audit around. Instead of people sampling a few outputs by hand, a language model acts as the judge and reviews every single output against the same rubric the human auditors use.</p>
+            </div>
+            <div class="pop" style="--d:.2s">
+              <svg class="art" viewBox="0 0 440 300" role="img" aria-label="A friendly robot judge holding a checklist and a magnifying glass, waving hello next to the product manager">
+                <path class="f-ground" d="M0 258 Q220 240 440 258 L440 300 L0 300 Z"/>
+                <g class="sparkle" style="animation-delay:.2s">
+                  <path d="M52 60 l4 11 l11 4 l-11 4 l-4 11 l-4 -11 l-11 -4 l11 -4 Z" fill="#ffd23f"/>
+                </g>
+                <g class="sparkle" style="animation-delay:.9s">
+                  <path d="M392 42 l3.4 9.4 l9.4 3.4 l-9.4 3.4 l-3.4 9.4 l-3.4 -9.4 l-9.4 -3.4 l9.4 -3.4 Z" fill="#ffb43a"/>
+                </g>
+                <g class="sparkle" style="animation-delay:1.4s">
+                  <path d="M356 128 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#ffd23f"/>
+                </g>
+                <g transform="translate(96 62) scale(1.02)">
+                  <g class="bob"><use href="#char-bot"/></g>
+                </g>
+                <g transform="translate(292 96) scale(0.82)">
+                  <use href="#char-pm"/>
+                </g>
+                <g class="pop" style="--d:.7s">
+                  <circle cx="368" cy="66" r="24" fill="#0f9594"/>
+                  <path d="M355 66 l9 9 l18 -19" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <!-- Scene 3: Step 1, inputs -->
+        <section class="scene" data-dur="9500" aria-label="Scene 3, step 1, inputs">
+          <div class="scene-head">
+            <span class="chip pop" style="--d:.05s">Step 1 · Inputs</span>
+            <h2 class="pop" style="--d:.12s">What goes in</h2>
+            <p class="lede pop" style="--d:.22s">The PM loads three things into CheckMate, and the judge takes it from there.</p>
+          </div>
+          <svg class="art art-strip pop" style="--d:.3s" viewBox="0 0 560 170" role="img" aria-label="Documents flowing from the product manager along a dotted path into the robot judge">
+            <g transform="translate(6 18) scale(0.68)">
+              <use href="#char-pm"/>
+            </g>
+            <path d="M140 92 Q280 40 408 84" stroke="#0f9594" stroke-width="3.5" stroke-dasharray="2 9" stroke-linecap="round" fill="none" class="dash-move"/>
+            <g class="float-up">
+              <rect x="212" y="34" width="34" height="44" rx="4" fill="#ffffff" stroke="#c4ced4" stroke-width="2"/>
+              <path d="M220 48 h18 M220 58 h18 M220 68 h12" stroke="#c4ced4" stroke-width="3.5" stroke-linecap="round"/>
+            </g>
+            <g class="float-up" style="animation-delay:.7s">
+              <rect x="272" y="18" width="34" height="44" rx="4" fill="#fff3d6" stroke="#d9a441" stroke-width="2"/>
+              <path d="M279 32 l3.4 3.4 l6 -6.4 M279 46 l3.4 3.4 l6 -6.4" stroke="#0f9594" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(0 2)"/>
+              <path d="M293 34 h7 M293 48 h7" stroke="#d8c491" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <g class="float-up" style="animation-delay:1.3s">
+              <rect x="330" y="40" width="34" height="44" rx="4" fill="#ffffff" stroke="#c4ced4" stroke-width="2"/>
+              <path d="M338 54 l5 5 l9 -10 M338 72 l5 5 l9 -10" stroke="#ff6b4a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(0 1)"/>
+            </g>
+            <g transform="translate(404 8) scale(0.78)">
+              <g class="bob"><use href="#char-bot"/></g>
+            </g>
+          </svg>
+          <div class="cards">
+            <div class="card pop" style="--d:.45s">
+              <div class="icon-badge" style="background:#ffe3da">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e04e2e" stroke-width="2" stroke-linecap="round"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4"/><path d="M4 7v14h13" opacity=".55"/></svg>
+              </div>
+              <h3>A batch of outputs</h3>
+              <p>Everything the AI tool produced in the period being audited: drafts, replies, summaries, and more.</p>
+            </div>
+            <div class="card pop" style="--d:.6s">
+              <div class="icon-badge" style="background:#fff0cd">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b57e10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5"/><path d="M9 11l1.6 1.6L14 9M9 17l1.6 1.6L14 15"/></svg>
+              </div>
+              <h3>The rubric</h3>
+              <p>The exact questions human auditors answer about each output, the same ones the judge will now answer.</p>
+            </div>
+            <div class="card pop" style="--d:.75s">
+              <div class="icon-badge" style="background:#d9f0ec">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0b7372" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5.6 6 .7-4.4 4.1 1.2 5.9L12 16.4l-5.3 2.9 1.2-5.9L3.5 9.3l6-.7z"/></svg>
+              </div>
+              <h3>Examples, optional</h3>
+              <p>A few good and bad outputs, each with a short note explaining why, to anchor the judge's taste.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Scene 4: Step 2, judging -->
+        <section class="scene" data-dur="11000" aria-label="Scene 4, step 2, judging">
+          <div class="layout-split">
+            <div class="pop" style="--d:.05s">
+              <svg class="art" viewBox="0 0 440 300" role="img" aria-label="The robot judge scanning a sample output with its magnifying glass">
+                <path class="f-ground" d="M0 258 Q220 240 440 258 L440 300 L0 300 Z"/>
+                <g class="pop" style="--d:.25s">
+                  <rect x="238" y="52" width="168" height="196" rx="10" fill="#ffffff" stroke="#c4ced4" stroke-width="2" transform="rotate(2 322 150)"/>
+                  <path d="M258 84 h128 M258 106 h128 M258 128 h96 M258 150 h128 M258 172 h84 M258 194 h112" stroke="#d8dee2" stroke-width="6" stroke-linecap="round"/>
+                  <rect x="252" y="66" width="66" height="18" rx="9" fill="#ff6b4a"/>
+                  <text x="285" y="79" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="11" fill="#ffffff">SAMPLE</text>
+                </g>
+                <g transform="translate(28 58) scale(1.04)">
+                  <g class="bob"><use href="#char-bot"/></g>
+                </g>
+                <g class="scan" opacity="0.9">
+                  <circle cx="330" cy="120" r="30" fill="#bdeff2" opacity="0.35"/>
+                </g>
+              </svg>
+            </div>
+            <div>
+              <span class="chip pop" style="--d:.1s">Step 2 · Judging</span>
+              <h2 class="pop" style="--d:.18s">The judge gets to work</h2>
+              <p class="lede pop" style="--d:.28s; margin-bottom:16px">The judge model reads each output and answers every rubric question. It scores three dimensions, and it writes a rationale for every judgment, so nothing is a black box.</p>
+              <div class="sample pop" style="--d:.45s">
+                <div class="sample-top">
+                  <span class="sample-tag">SAMPLE</span>
+                  <span class="sample-note">Fictional example case</span>
+                </div>
+                <p class="sample-quote"><span class="from">OUTPUT FROM AN AI SHOPPING ASSISTANT</span>Good news, your sneakers are on the way and will arrive by Friday. You can track them from the link in your shipping email.</p>
+                <div class="score-row"><span>Accuracy</span><span class="bar"><span class="bar-fill" style="--w:80%; --d:.6s"></span></span><span>4/5</span></div>
+                <div class="score-row"><span>Completeness</span><span class="bar"><span class="bar-fill" style="--w:60%; --d:.75s"></span></span><span>3/5</span></div>
+                <div class="score-row"><span>Tone</span><span class="bar"><span class="bar-fill" style="--w:100%; --d:.9s"></span></span><span>5/5</span></div>
+                <p class="rationale"><strong>Judge's rationale:</strong> the arrival day matches the order and the tone is warm, but the reply never gives the tracking link itself or mentions the return window, so Completeness loses points.</p>
+              </div>
+              <div class="badges pop" style="--d:.7s">
+                <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="#ffb43a"><path d="M12 2l2.6 6.2 6.7.7-5 4.5 1.4 6.6L12 16.7 6.3 20l1.4-6.6-5-4.5 6.7-.7z"/></svg>Design rule: a stronger model audits a weaker one</span>
+                <span class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="#ffb43a"><path d="M12 2l2.6 6.2 6.7.7-5 4.5 1.4 6.6L12 16.7 6.3 20l1.4-6.6-5-4.5 6.7-.7z"/></svg>Design rule: rubric-based prompts, not vibes</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Scene 5: Step 3, outputs -->
+        <section class="scene" data-dur="9500" aria-label="Scene 5, step 3, outputs">
+          <div class="scene-head">
+            <span class="chip pop" style="--d:.05s">Step 3 · Outputs</span>
+            <h2 class="pop" style="--d:.12s">What comes out</h2>
+            <p class="lede pop" style="--d:.22s">Every run produces three deliverables, ready for the team to act on.</p>
+          </div>
+          <svg class="art art-strip pop" style="--d:.3s" viewBox="0 0 560 170" role="img" aria-label="The robot judge handing three finished reports to the product manager">
+            <g transform="translate(30 8) scale(0.78)">
+              <g class="bob"><use href="#char-bot"/></g>
+            </g>
+            <path d="M218 84 Q300 58 384 84" stroke="#0f9594" stroke-width="3.5" stroke-dasharray="2 9" stroke-linecap="round" fill="none" class="dash-move"/>
+            <g class="float-up">
+              <rect x="252" y="52" width="36" height="48" rx="4" fill="#ffffff" stroke="#c4ced4" stroke-width="2"/>
+              <path d="M260 66 h20 M260 76 h20 M260 86 h13" stroke="#c4ced4" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M261 94 l3 3 l6 -7" stroke="#0f9594" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </g>
+            <g class="float-up" style="animation-delay:.8s">
+              <rect x="300" y="38" width="36" height="48" rx="4" fill="#fff3d6" stroke="#d9a441" stroke-width="2"/>
+              <path d="M308 74 v-10 M316 74 V58 M324 74 V64" stroke="#e04e2e" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M308 48 h20" stroke="#d8c491" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <g transform="translate(398 18) scale(0.68)">
+              <use href="#char-pm"/>
+            </g>
+          </svg>
+          <div class="cards">
+            <div class="card pop" style="--d:.45s">
+              <div class="icon-badge" style="background:#ffe3da">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e04e2e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4"/><path d="M10 13l1.8 1.8L15.5 11"/></svg>
+              </div>
+              <h3>Per-case audit report</h3>
+              <p>One report for every output, mirroring the format human auditors produce, ready to review case by case.</p>
+            </div>
+            <div class="card pop" style="--d:.6s">
+              <div class="icon-badge" style="background:#fff0cd">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b57e10" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg>
+              </div>
+              <h3>Summary report</h3>
+              <p>Overall scores for the whole batch, plus the key insights as plain bullet points a busy team can skim.</p>
+            </div>
+            <div class="card pop" style="--d:.75s">
+              <div class="icon-badge" style="background:#d9f0ec">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0b7372" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h13"/><circle cx="19" cy="12" r="2.2"/></svg>
+              </div>
+              <h3>Drill-down lists</h3>
+              <p>Every insight links to the cases behind it, grouped together so teams can run root cause analysis fast.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Scene 6: Results -->
+        <section class="scene" data-dur="10000" aria-label="Scene 6, results">
+          <div class="scene-head">
+            <span class="chip pop" style="--d:.05s">Results</span>
+            <h2 class="pop" style="--d:.12s">It worked, and it spread</h2>
+            <p class="lede pop" style="--d:.22s">The machine audits matched human judgment, landed in days instead of weeks, and got picked up by other teams.</p>
+          </div>
+          <svg class="art art-strip pop" style="--d:.25s" viewBox="0 0 560 170" role="img" aria-label="The product manager and the robot judge celebrating together under falling confetti">
+            <g fill="#ff6b4a"><circle class="confetti" cx="120" cy="8" r="5"/><circle class="confetti" cx="210" cy="2" r="4" style="animation-delay:.5s"/><circle class="confetti" cx="330" cy="6" r="5" style="animation-delay:1s"/><circle class="confetti" cx="430" cy="2" r="4" style="animation-delay:1.5s"/></g>
+            <g fill="#ffb43a"><rect class="confetti" x="160" y="0" width="8" height="8" rx="2" style="animation-delay:.8s"/><rect class="confetti" x="280" y="4" width="8" height="8" rx="2" style="animation-delay:1.8s"/><rect class="confetti" x="390" y="0" width="8" height="8" rx="2" style="animation-delay:.3s"/></g>
+            <g fill="#0f9594"><circle class="confetti" cx="250" cy="4" r="4" style="animation-delay:2.1s"/><circle class="confetti" cx="470" cy="8" r="5" style="animation-delay:.9s"/><rect class="confetti" x="90" y="2" width="8" height="8" rx="2" style="animation-delay:1.2s"/></g>
+            <g transform="translate(140 18) scale(0.68)">
+              <use href="#char-pm"/>
+            </g>
+            <g transform="translate(268 8) scale(0.78)">
+              <g class="bob"><use href="#char-bot"/></g>
+            </g>
+            <g class="pop" style="--d:.6s">
+              <circle cx="478" cy="52" r="25" fill="#0f9594"/>
+              <path d="M464 52 l10 10 l20 -21" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </g>
+          </svg>
+          <div class="stats">
+            <div class="stat pop" style="--d:.4s">
+              <div class="num">90%+</div>
+              <div class="lbl">agreement with human ground truth</div>
+            </div>
+            <div class="stat pop" style="--d:.55s">
+              <div class="num">Weeks to days</div>
+              <div class="lbl">audit turnaround time</div>
+            </div>
+            <div class="stat pop" style="--d:.7s">
+              <div class="num">2 teams</div>
+              <div class="lbl">adopted CheckMate internally</div>
+            </div>
+            <div class="stat pop" style="--d:.85s">
+              <div class="num">10+</div>
+              <div class="lbl">senior stakeholders backed the brief and roadmap</div>
+            </div>
+          </div>
+          <div style="text-align:center">
+            <button class="big-replay pop" style="--d:1s" data-replay type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+              Watch it again
+            </button>
+          </div>
+        </section>
+
+      </div>
+
+      <div class="controls">
+        <button class="ctl" id="prevBtn" type="button" aria-label="Previous scene">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button class="ctl primary" id="playBtn" type="button" aria-label="Pause">
+          <svg id="iconPause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.4"/><rect x="14" y="5" width="4" height="14" rx="1.4"/></svg>
+          <svg id="iconPlay" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M8 5.5v13l11 -6.5z"/></svg>
+        </button>
+        <button class="ctl" id="nextBtn" type="button" aria-label="Next scene">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7 -7 7"/></svg>
+        </button>
+        <span class="counter" id="counter">Scene 1 of 6</span>
+        <button class="ctl replay" id="replayBtn" type="button" aria-label="Replay from the start">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+          Replay
+        </button>
+      </div>
+    </div>
+
+    <footer>Cartoon explainer with fictional example data. CheckMate was an internal Amazon tool, so no internal screenshots or data are shown. Built by Ivy Liu, Amazon PM intern, summer 2025.</footer>
+  </main>
+
+  <script>
+    (function () {
+      var scenes = Array.prototype.slice.call(document.querySelectorAll(".scene"));
+      var progress = document.getElementById("progress");
+      var counter = document.getElementById("counter");
+      var playBtn = document.getElementById("playBtn");
+      var iconPlay = document.getElementById("iconPlay");
+      var iconPause = document.getElementById("iconPause");
+      var prevBtn = document.getElementById("prevBtn");
+      var nextBtn = document.getElementById("nextBtn");
+      var replayBtn = document.getElementById("replayBtn");
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      var fills = [];
+      scenes.forEach(function (scene, i) {
+        var seg = document.createElement("button");
+        seg.type = "button";
+        seg.className = "seg";
+        seg.setAttribute("role", "tab");
+        seg.setAttribute("aria-label", "Go to scene " + (i + 1));
+        var fill = document.createElement("span");
+        fill.className = "seg-fill";
+        seg.appendChild(fill);
+        seg.addEventListener("click", function () { goTo(i); });
+        progress.appendChild(seg);
+        fills.push(fill);
+      });
+
+      var idx = 0;
+      var playing = !reduceMotion;
+      var elapsed = 0;
+      var lastTs = null;
+      var rafId = null;
+
+      function duration() {
+        return parseInt(scenes[idx].getAttribute("data-dur"), 10) || 8000;
+      }
+
+      function render() {
+        scenes.forEach(function (s, i) {
+          s.classList.toggle("active", i === idx);
+          s.setAttribute("aria-hidden", i === idx ? "false" : "true");
+        });
+        fills.forEach(function (f, i) {
+          var seg = f.parentNode;
+          if (i < idx) { seg.classList.add("done"); f.style.width = "100%"; }
+          else if (i > idx) { seg.classList.remove("done"); f.style.width = "0%"; }
+          else {
+            seg.classList.remove("done");
+            f.style.width = Math.min(100, (elapsed / duration()) * 100) + "%";
+          }
+        });
+        counter.textContent = "Scene " + (idx + 1) + " of " + scenes.length;
+        prevBtn.disabled = idx === 0;
+        nextBtn.disabled = idx === scenes.length - 1;
+        iconPlay.style.display = playing ? "none" : "block";
+        iconPause.style.display = playing ? "block" : "none";
+        playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+      }
+
+      function tick(ts) {
+        if (!playing) { rafId = null; return; }
+        if (lastTs === null) lastTs = ts;
+        elapsed += ts - lastTs;
+        lastTs = ts;
+        if (elapsed >= duration()) {
+          if (idx < scenes.length - 1) {
+            idx += 1;
+            elapsed = 0;
+          } else {
+            playing = false;
+            elapsed = duration();
+            render();
+            rafId = null;
+            return;
+          }
+        }
+        render();
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function startLoop() {
+        if (rafId === null) { lastTs = null; rafId = requestAnimationFrame(tick); }
+      }
+
+      function goTo(i) {
+        idx = Math.max(0, Math.min(scenes.length - 1, i));
+        elapsed = 0;
+        render();
+        if (playing) startLoop();
+      }
+
+      playBtn.addEventListener("click", function () {
+        if (!playing && idx === scenes.length - 1 && elapsed >= duration()) {
+          idx = 0; elapsed = 0;
+        }
+        playing = !playing;
+        render();
+        if (playing) startLoop();
+      });
+      prevBtn.addEventListener("click", function () { goTo(idx - 1); });
+      nextBtn.addEventListener("click", function () { goTo(idx + 1); });
+      function replay() { playing = true; goTo(0); startLoop(); }
+      replayBtn.addEventListener("click", replay);
+      Array.prototype.forEach.call(document.querySelectorAll("[data-replay]"), function (b) {
+        b.addEventListener("click", replay);
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight") goTo(idx + 1);
+        else if (e.key === "ArrowLeft") goTo(idx - 1);
+        else if (e.key === " ") { e.preventDefault(); playBtn.click(); }
+      });
+
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) { lastTs = null; }
+      });
+
+      render();
+      if (playing) startLoop();
+    })();
+  </script>
+</body>
+</html>
